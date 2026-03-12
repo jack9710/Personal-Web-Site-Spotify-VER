@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jack Chang | 數位原住民 (Spotify 版)</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Syne:wght@700;800&family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'], syne: ['Syne', 'sans-serif'], mono:['Fira Code', 'monospace'] },
+                    colors: { spotify: '#1DB954' }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #0A0A0A; color: white; overflow-x: hidden; cursor: none; }
+        ::selection { background-color: #A855F7; color: white; }
+        a, button,[class*="cursor-pointer"], .holo-card { cursor: none !important; }
+
+        /* --- Apple 級靈動島動畫設定 --- */
+        #dynamic-island {
+            width: 130px; height: 36px; border-radius: 9999px;
+            transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1), height 0.5s cubic-bezier(0.22, 1, 0.36, 1), border-radius 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        #dynamic-island.is-expanded { width: 270px; height: 64px; border-radius: 32px; }
+        @media (min-width: 768px) { #dynamic-island.is-expanded { width: 320px; } }
+
+        /* --- 動畫與其他組件 --- */
+        #scroll-progress { position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, #A855F7, #00ffff); width: 0%; z-index: 9999; box-shadow: 0 0 10px #A855F7, 0 0 20px #00ffff; transition: width 0.2s ease-out; }
+        .cursor-dot, .cursor-outline { position: fixed; top: 0; left: 0; transform: translate(-50%, -50%); border-radius: 50%; pointer-events: none; z-index: 10000; }
+        .cursor-dot { width: 8px; height: 8px; background-color: #A855F7; box-shadow: 0 0 10px #A855F7; transition: width 0.2s, height 0.2s, background-color 0.2s; }
+        .cursor-outline { width: 40px; height: 40px; border: 1px solid rgba(168, 85, 247, 0.5); transition: width 0.2s, height 0.2s, background-color 0.2s; }
+        .cursor-hover .cursor-dot { background-color: transparent; }
+        .cursor-hover .cursor-outline { width: 60px; height: 60px; background-color: rgba(168, 85, 247, 0.1); border-color: #00ffff; backdrop-filter: blur(2px); box-shadow: 0 0 15px rgba(0, 255, 255, 0.3); }
+        .cursor-game .cursor-outline { border-color: red; background-color: rgba(255, 0, 0, 0.1); width: 30px; height: 30px; border-radius: 0; border: 2px dashed red; animation: spin-slow 4s linear infinite;}
+        .glitch { position: relative; display: inline-block; }
+        .glitch:hover::before, .glitch:hover::after { content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #0A0A0A; }
+        .glitch:hover::before { left: 2px; text-shadow: -2px 0 #A855F7; clip: rect(24px, 550px, 90px, 0); animation: glitch-anim-2 3s infinite linear alternate-reverse; }
+        .glitch:hover::after { left: -2px; text-shadow: -2px 0 #00ffff; clip: rect(85px, 550px, 140px, 0); animation: glitch-anim 2.5s infinite linear alternate-reverse; }
+        @keyframes glitch-anim { 0% { clip: rect(15px, 9999px, 81px, 0); } 20% { clip: rect(41px, 9999px, 14px, 0); } 40% { clip: rect(91px, 9999px, 17px, 0); } 60% { clip: rect(23px, 9999px, 95px, 0); } 80% { clip: rect(87px, 9999px, 2px, 0); } 100% { clip: rect(10px, 9999px, 60px, 0); } }
+        @keyframes glitch-anim-2 { 0% { clip: rect(65px, 9999px, 100px, 0); } 20% { clip: rect(12px, 9999px, 54px, 0); } 40% { clip: rect(74px, 9999px, 87px, 0); } 60% { clip: rect(3px, 9999px, 25px, 0); } 80% { clip: rect(57px, 9999px, 42px, 0); } 100% { clip: rect(80px, 9999px, 10px, 0); } }
+        .holo-card { position: relative; overflow: hidden; border-radius: 1.5rem; background: #0f0f11; border: 1px solid rgba(255,255,255,0.1); transition: border-color 0.4s, box-shadow 0.4s, transform 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
+        .holo-card::before { content: ""; position: absolute; inset: 0; z-index: 10; pointer-events: none; opacity: 0; background: linear-gradient(115deg, transparent 20%, rgba(0, 255, 255, 0.4) 30%, rgba(168, 85, 247, 0.5) 45%, rgba(255, 255, 255, 0.6) 50%, rgba(168, 85, 247, 0.5) 55%, transparent 70%); mix-blend-mode: color-dodge; transition: opacity 0.5s; background-size: 250% 250%; }
+        .holo-card:hover { border-color: #A855F7; box-shadow: 0 0 30px rgba(168, 85, 247, 0.3), 0 0 10px rgba(0, 255, 255, 0.2) inset; }
+        .holo-card:hover::before { opacity: 1; animation: holo-shine 2s infinite linear; }
+        @keyframes holo-shine { 0% { background-position: 200% center; } 100% { background-position: -200% center; } }
+        .holo-content { position: relative; z-index: 1; }
+        #network-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -10; pointer-events: none; opacity: 0.5; }
+        .reveal { opacity: 0; transform: translateY(40px) scale(0.95); transition: all 1s cubic-bezier(0.22, 1, 0.36, 1); }
+        .reveal.active { opacity: 1; transform: translateY(0) scale(1); }
+        .magnetic-wrap { display: inline-block; padding: 20px; margin: -20px; }
+        @keyframes wave { 0%, 100% { transform: scaleY(0.3); } 50% { transform: scaleY(1); } }
+        .wave-bar { animation: wave 1s ease-in-out infinite; transform-origin: bottom; }
+        @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .animate-spin-slow { animation: spin-slow 4s linear infinite; }
+        .bug-entity { position: absolute; font-size: 24px; user-select: none; transition: transform 0.2s; }
+        .bug-entity:hover { transform: scale(1.3); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="relative font-sans antialiased pt-10">
+
+    <div id="scroll-progress"></div>
+    <div class="cursor-dot" id="cursor-dot"></div>
+    <div class="cursor-outline" id="cursor-outline"></div>
+    <canvas id="network-canvas"></canvas>
+    
+    <div class="fixed top-[-20%] left-[-10%] w-[60%] h-[60%] bg-[#7E22CE] rounded-full blur-[150px] opacity-10 pointer-events-none -z-20"></div>
+    <div class="fixed bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-[#00ffff] rounded-full blur-[150px] opacity-[0.05] pointer-events-none -z-20"></div>
+
+    <!-- 背景音樂播放器 -->
+    <audio id="bg-audio" src="https://streams.ilovemusic.de/iloveradio17.mp3" crossorigin="anonymous" preload="none"></audio>
+
+    <!-- Navbar -->
+    <nav class="fixed top-0 w-full z-40 backdrop-blur-md bg-[#0A0A0A]/60 border-b border-white/5 transition-all">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center relative">
+            
+            <div class="flex items-center relative h-full">
+                <!-- 左側 Logo -->
+                <div class="text-xl font-bold tracking-tighter font-syne z-50 text-white cursor-pointer hover:text-[#A855F7] transition-colors hover-target glitch w-[70px]" data-text="JACK.">
+                    JACK<span class="text-[#A855F7]">.</span>
+                </div>
+                
+                <!-- ★ 靈動島 (Dynamic Island) - Navbar 左側 ★ -->
+                <div id="dynamic-island" class="absolute left-[90px] top-1/2 -translate-y-1/2 z-[100] bg-black border border-white/10 flex items-center justify-center overflow-hidden cursor-pointer hover:border-spotify/50 hover:shadow-[0_0_20px_rgba(29,185,84,0.3)] shadow-xl hover-target">
+                    
+                    <!-- 收縮狀態 (Collapsed) -->
+                    <div id="island-collapsed" class="absolute flex items-center justify-between w-full px-3 transition-opacity duration-300 pointer-events-none">
+                        <div class="flex items-center gap-2">
+                            <!-- 迷你專輯封面 -->
+                            <img src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=100&auto=format&fit=crop" class="w-6 h-6 rounded-full cover-art-spin animate-spin-slow" style="animation-play-state: paused;" alt="cover">
+                            <span class="text-white text-xs font-bold font-sans tracking-wide">Spotify</span>
+                        </div>
+                        <div class="flex gap-[2px] h-3 items-end">
+                            <div class="w-[3px] bg-spotify rounded-full h-full wave-bar" style="animation-delay: 0.1s"></div>
+                            <div class="w-[3px] bg-spotify rounded-full h-[60%] wave-bar" style="animation-delay: 0.2s"></div>
+                            <div class="w-[3px] bg-spotify rounded-full h-[80%] wave-bar" style="animation-delay: 0.3s"></div>
+                        </div>
+                    </div>
+
+                    <!-- 展開狀態 (Expanded) -->
+                    <div id="island-expanded" class="absolute flex items-center justify-between w-full px-4 opacity-0 pointer-events-none transition-opacity duration-300">
+                        <div class="flex items-center gap-3">
+                            <img src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=200&auto=format&fit=crop" class="w-12 h-12 rounded-xl shadow-lg object-cover cover-art-spin animate-spin-slow" style="animation-play-state: paused;" alt="Album Cover">
+                            <div class="flex flex-col text-left">
+                                <span class="text-white text-sm font-bold leading-tight truncate w-24 md:w-32">Lofi Coding Vibes</span>
+                                <span class="text-gray-400 text-[11px] leading-tight flex items-center gap-1 mt-1">
+                                    <i data-lucide="headphones" class="w-3 h-3 text-spotify"></i> Focus Radio
+                                </span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 pointer-events-auto">
+                            <!-- 播放/暫停按鈕 -->
+                            <button id="play-pause-btn" class="text-white hover:text-spotify transition-colors p-2 rounded-full transform hover:scale-110">
+                                <i data-lucide="play" id="play-icon" class="w-6 h-6 fill-current"></i>
+                                <i data-lucide="pause" id="pause-icon" class="w-6 h-6 fill-current hidden"></i>
+                                <i data-lucide="loader-2" id="loading-icon" class="w-6 h-6 animate-spin hidden text-spotify"></i>
+                            </button>
+                            <!-- 前往 Spotify -->
+                            <a href="https://open.spotify.com/playlist/37i9dQZF1DWWQRwui0ExPn" target="_blank" id="spotify-link-btn" class="text-spotify hover:text-white transition-colors p-2 rounded-full transform hover:scale-110">
+                                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.84.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.02.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.6.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hidden md:flex items-center space-x-8 text-sm text-gray-400 z-50 font-mono">
+                <a href="#about" class="hover:text-white transition-all hover-target">01.About</a>
+                <a href="#skills" class="hover:text-white transition-all hover-target">02.Skills</a>
+                <a href="#projects" class="hover:text-white transition-all hover-target">03.Works</a>
+                <a href="#timeline" class="hover:text-white transition-all hover-target">04.Journey</a>
+                <div class="magnetic-wrap hover-target">
+                    <a href="mailto:jack@email.com" class="magnetic-btn inline-block px-5 py-2 text-white bg-white/5 border border-white/10 rounded-full hover:border-[#00ffff] hover:bg-[#00ffff]/10 hover:shadow-[0_0_15px_rgba(0,255,255,0.4)] transition-all duration-300">
+                        <i data-lucide="mail" class="w-4 h-4 inline pb-0.5"></i> Connect
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 1. Hero Section -->
+    <section class="relative pt-32 pb-24 px-6 max-w-6xl mx-auto flex flex-col items-center justify-center text-center min-h-[95vh] reveal">
+        <div class="inline-block px-4 py-1.5 mb-6 rounded-full border border-[#A855F7]/30 bg-[#A855F7]/10 text-[#D8B4FE] text-xs font-medium tracking-widest uppercase font-mono shadow-[0_0_15px_rgba(168,85,247,0.2)]">
+            > Jack Chang | System Ready _
+        </div>
+        
+        <h1 class="text-[5rem] md:text-[8rem] font-bold mb-2 leading-none tracking-tighter font-syne glitch hover-target" data-text="JACK CHANG">
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-300 to-gray-500">JACK</span>
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#D8B4FE] via-[#A855F7] to-[#00ffff]">CHANG</span>
+        </h1>
+        
+        <div class="text-2xl md:text-4xl font-bold mb-8 font-syne h-[60px] md:h-[80px]">
+            <span id="typed-output" class="text-gray-300"></span>
+        </div>
+
+        <p class="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-12 font-light">
+            在代碼與創新的交匯處構築世界。專注於前端開發、演算法優化與深度學習解決方案。
+        </p>
+
+        <div class="flex gap-6">
+            <div class="magnetic-wrap hover-target">
+                <a href="#about" class="magnetic-btn inline-flex items-center gap-2 px-8 py-4 bg-white text-black font-bold rounded-full hover:bg-[#A855F7] hover:text-white hover:shadow-[0_0_20px_rgba(168,85,247,0.6)] transition-all duration-300">
+                    Explore DB <i data-lucide="database" class="w-5 h-5"></i>
+                </a>
+            </div>
+            <div class="magnetic-wrap hover-target">
+                <a href="#game" class="magnetic-btn inline-flex items-center gap-2 px-8 py-4 border border-white/20 text-white font-bold rounded-full hover:border-[#00ffff] hover:text-[#00ffff] hover:bg-[#00ffff]/10 hover:shadow-[0_0_20px_rgba(0,255,255,0.3)] transition-all duration-300">
+                    Play Minigame <i data-lucide="gamepad-2" class="w-5 h-5"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. 關於我 -->
+    <section id="about" class="py-24 px-6 max-w-6xl mx-auto scroll-mt-20 border-t border-white/5">
+        <div class="reveal grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            <div class="holo-card relative w-full aspect-square md:aspect-[4/5] hover-target cursor-pointer group hover:-translate-y-2 modal-card" 
+                 data-tilt data-tilt-max="8" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.4"
+                 data-tag="STATUS: ONLINE" data-title="Jack Chang" 
+                 data-img="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=800&auto=format&fit=crop"
+                 data-desc="<p class='text-[#00ffff] mb-4 font-bold'>> USER_PROFILE_LOADED...</p>
+                            <p>我是一名熱愛解題與開發的軟體工程師。平常除了寫扣，最喜歡研究系統底層架構與效能優化。<br><br>
+                            <span class='text-white mt-4 inline-block font-bold'>開發哲學：</span><br>
+                            - <strong>Keep It Simple, Stupid (KISS)</strong><br>
+                            - 把 Bug 當作系統進化的養分<br>
+                            - 寫出連三個月後的自己都看得懂的代碼</p>">
+                <div class="holo-content w-full h-full pointer-events-none">
+                    <img src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=800&auto=format&fit=crop" alt="Jack Chang" class="absolute inset-0 w-full h-full object-cover filter grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700">
+                    <div class="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-transparent to-transparent opacity-90"></div>
+                    <div class="absolute bottom-6 left-6 font-mono text-sm text-[#00ffff] opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                        <p>> status: <span class="text-green-400">online</span></p>
+                        <p>> caffeine_lvl: <span class="text-yellow-400">MAX</span></p>
+                        <p class="mt-2 text-[#A855F7] animate-pulse">>> Click for details <<</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="space-y-6">
+                <h2 class="text-3xl font-bold font-syne flex items-center gap-3">
+                    <i data-lucide="scan-face" class="text-[#00ffff]"></i> WHO AM I ?
+                </h2>
+                <div class="space-y-4 text-gray-300 leading-relaxed text-lg">
+                    <p>表面上，我是個每天早起對抗睡意的高中生；背地裡，我是個把 <span class="text-[#D8B4FE] font-bold">Bug 寫成 Feature</span> 的代碼魔術師 🪄。</p>
+                    <p>主要靠著 <strong class="text-white">咖啡因、Stack Overflow 和無盡的求知慾</strong> 存活在地球。</p>
+                    <div class="bg-white/5 border border-white/10 p-5 rounded-2xl mt-6">
+                        <h4 class="text-white font-bold mb-4 flex items-center gap-2"><i data-lucide="zap" class="w-4 h-4 text-yellow-400"></i> 開發者雷達圖：</h4>
+                        <ul class="space-y-3 font-mono text-sm">
+                            <li class="flex justify-between items-center">
+                                <span>寫 Code 速度</span> <div class="w-1/2 bg-gray-800 h-2 rounded-full overflow-hidden"><div class="bg-[#A855F7] w-[80%] h-full"></div></div>
+                            </li>
+                            <li class="flex justify-between items-center">
+                                <span>找 Bug 視力</span> <div class="w-1/2 bg-gray-800 h-2 rounded-full overflow-hidden"><div class="bg-[#00ffff] w-[95%] h-full"></div></div>
+                            </li>
+                            <li class="flex justify-between items-center">
+                                <span>準時睡覺</span> <div class="w-1/2 bg-gray-800 h-2 rounded-full overflow-hidden"><div class="bg-red-500 w-[10%] h-full animate-pulse"></div></div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. 技術卡牌 -->
+    <section id="skills" class="py-24 px-6 max-w-6xl mx-auto scroll-mt-20 border-t border-white/5">
+        <div class="reveal text-center mb-16">
+            <h2 class="text-4xl font-bold font-syne flex items-center justify-center gap-3 mb-4">
+                <i data-lucide="layers" class="text-[#A855F7]"></i> Combat Deck.
+            </h2>
+            <p class="text-gray-400 mb-2">我的核心技術棧。捨棄無聊的條列式，直接亮出我的 SSR 閃卡。</p>
+            <p class="text-[#00ffff] text-xs font-mono inline-block animate-pulse bg-[#00ffff]/10 px-3 py-1 rounded-full border border-[#00ffff]/30">> 點擊卡牌查看詳細技能樹</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="reveal holo-card p-1 hover-target group cursor-pointer hover:-translate-y-2 modal-card" 
+                 data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.5"
+                 data-tag="Lv. 99" data-title="Frontend Mage" data-icon="layout"
+                 data-desc="<p class='text-[#A855F7] mb-4 font-bold'>> SKILL_TREE_FRONTEND...</p>
+                 <p>專注於構建極致流暢的使用者體驗與現代化 UI。<br><br>
+                 <span class='text-white mt-4 inline-block font-bold'>核心技能：</span><br>
+                 - <strong>框架：</strong> React.js, Next.js (App Router)<br>
+                 - <strong>樣式：</strong> TailwindCSS, Framer Motion 動畫庫<br>
+                 - <strong>優化：</strong> Web Vitals 優化、SSR/SSG 渲染策略</p>">
+                <div class="holo-content bg-[#0A0A0A] h-full rounded-[1.3rem] p-6 border border-white/5 flex flex-col pointer-events-none">
+                    <div class="flex justify-between items-center mb-4 border-b border-white/10 pb-4">
+                        <span class="font-syne font-bold text-xl text-white">Frontend Mage</span>
+                        <span class="text-xs font-mono bg-[#A855F7]/20 text-[#D8B4FE] px-2 py-1 rounded">Lv. 99</span>
+                    </div>
+                    <div class="flex-grow flex items-center justify-center py-6">
+                        <i data-lucide="layout" class="w-20 h-20 text-[#A855F7] group-hover:scale-110 transition-transform"></i>
+                    </div>
+                    <div class="font-mono text-sm text-gray-400 space-y-2 bg-white/5 p-4 rounded-xl">
+                        <p class="text-[#00ffff]">ATK: <span class="text-white">React, Next.js</span></p>
+                        <p class="text-[#00ffff]">DEF: <span class="text-white">TailwindCSS, Framer</span></p>
+                        <p class="text-xs mt-2 text-gray-500 italic">"Can center a div blindfolded."</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="reveal holo-card p-1 hover-target group cursor-pointer hover:-translate-y-2 modal-card" 
+                 style="transition-delay: 100ms;" data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.5"
+                 data-tag="SSR" data-title="AI Summoner" data-icon="brain-circuit"
+                 data-desc="<p class='text-[#00ffff] mb-4 font-bold'>> SKILL_TREE_AI...</p>
+                 <p>能將龐大的數據轉化為有價值的智慧模型，並成功部署於邊緣設備。<br><br>
+                 <span class='text-white mt-4 inline-block font-bold'>核心技能：</span><br>
+                 - <strong>模型訓練：</strong> PyTorch, TensorFlow, Keras<br>
+                 - <strong>視覺辨識：</strong> OpenCV, YOLOv8 模型微調<br>
+                 - <strong>部署優化：</strong> TensorRT 模型壓縮與加速</p>">
+                <div class="holo-content bg-[#0A0A0A] h-full rounded-[1.3rem] p-6 border border-white/5 flex flex-col pointer-events-none">
+                    <div class="flex justify-between items-center mb-4 border-b border-white/10 pb-4">
+                        <span class="font-syne font-bold text-xl text-white">AI Summoner</span>
+                        <span class="text-xs font-mono bg-[#00ffff]/20 text-[#00ffff] px-2 py-1 rounded">SSR</span>
+                    </div>
+                    <div class="flex-grow flex items-center justify-center py-6">
+                        <i data-lucide="brain-circuit" class="w-20 h-20 text-[#00ffff] group-hover:scale-110 transition-transform"></i>
+                    </div>
+                    <div class="font-mono text-sm text-gray-400 space-y-2 bg-white/5 p-4 rounded-xl">
+                        <p class="text-[#A855F7]">ATK: <span class="text-white">Python, TensorFlow</span></p>
+                        <p class="text-[#A855F7]">DEF: <span class="text-white">Data Processing</span></p>
+                        <p class="text-xs mt-2 text-gray-500 italic">"Training models while sleeping."</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="reveal holo-card p-1 hover-target group cursor-pointer hover:-translate-y-2 modal-card" 
+                 style="transition-delay: 200ms;" data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.5"
+                 data-tag="SR" data-title="Backend Knight" data-icon="server"
+                 data-desc="<p class='text-yellow-400 mb-4 font-bold'>> SKILL_TREE_BACKEND...</p>
+                 <p>打造穩如泰山的後端伺服器與 API 架構。<br><br>
+                 <span class='text-white mt-4 inline-block font-bold'>核心技能：</span><br>
+                 - <strong>運行環境：</strong> Node.js, Express.js API 設計<br>
+                 - <strong>資料庫：</strong> PostgreSQL, MongoDB, Redis 快取<br>
+                 - <strong>架構與部署：</strong> Docker 容器化, Nginx, CI/CD</p>">
+                <div class="holo-content bg-[#0A0A0A] h-full rounded-[1.3rem] p-6 border border-white/5 flex flex-col pointer-events-none">
+                    <div class="flex justify-between items-center mb-4 border-b border-white/10 pb-4">
+                        <span class="font-syne font-bold text-xl text-white">Backend Knight</span>
+                        <span class="text-xs font-mono bg-yellow-500/20 text-yellow-500 px-2 py-1 rounded">SR</span>
+                    </div>
+                    <div class="flex-grow flex items-center justify-center py-6">
+                        <i data-lucide="server" class="w-20 h-20 text-yellow-500 group-hover:scale-110 transition-transform"></i>
+                    </div>
+                    <div class="font-mono text-sm text-gray-400 space-y-2 bg-white/5 p-4 rounded-xl">
+                        <p class="text-yellow-400">ATK: <span class="text-white">Node.js, Express</span></p>
+                        <p class="text-yellow-400">DEF: <span class="text-white">SQL, MongoDB</span></p>
+                        <p class="text-xs mt-2 text-gray-500 italic">"Protector of the sacred DB."</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. 專案展示 Bento Grid -->
+    <section id="projects" class="py-24 px-6 max-w-6xl mx-auto scroll-mt-20 border-t border-white/5">
+        <div class="reveal">
+            <h2 class="text-4xl font-bold mb-10 font-syne flex items-center gap-3"><i data-lucide="folder-git-2" class="text-[#A855F7]"></i> Featured Repos.</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[250px]">
+                
+                <div class="md:col-span-2 md:row-span-2 group holo-card p-8 flex flex-col justify-end hover-target cursor-pointer hover:-translate-y-2 modal-card" 
+                     data-tilt data-tilt-max="3" data-tilt-speed="400" data-tilt-glare="true" data-tilt-max-glare="0.2"
+                     data-tag="AWARD WINNER" data-title="全國科展：AI 視覺辨識系統" data-icon="microscope"
+                     data-desc="<p class='text-[#A855F7] mb-4 font-bold'>> REPO_DETAILS...</p>
+                     <p>解決醫療或工業上即時邊緣運算需求的計算機視覺專案。<br><br>
+                     <span class='text-white mt-4 inline-block font-bold'>技術細節與成果：</span><br>
+                     - 收集並標註了超過 <strong>10,000 張</strong> 影像數據集<br>
+                     - 採用輕量化的 <strong>YOLOv8</strong> 架構，使用 TensorRT 加速<br>
+                     - 辨識延遲降至 <strong>15ms</strong> 以內，準確率達 <strong>98.5%</strong><br>
+                     - 榮獲全國科展特優</p>">
+                    <div class="holo-content relative z-10 pointer-events-none">
+                        <div class="absolute top-[-160px] right-0 opacity-20 group-hover:opacity-100 group-hover:text-[#A855F7] transition-all duration-700">
+                            <i data-lucide="microscope" class="w-32 h-32"></i>
+                        </div>
+                        <div class="text-[#A855F7] font-mono text-sm mb-2">> run execution.py</div>
+                        <h3 class="text-4xl font-bold mb-3 text-white">全國科展：AI 視覺辨識系統</h3>
+                        <p class="text-gray-400 max-w-md text-base leading-relaxed mb-4">自行訓練的輕量級神經網路模型，邊緣設備提升 30% 效率，榮獲特優。</p>
+                        <div class="flex gap-2 mb-4">
+                            <span class="px-3 py-1 bg-white/10 rounded-full text-xs font-mono">Python</span>
+                            <span class="px-3 py-1 bg-white/10 rounded-full text-xs font-mono">TensorFlow</span>
+                        </div>
+                        <p class="text-[#00ffff] text-xs font-mono opacity-0 group-hover:opacity-100 transition-opacity">> 點擊查看細節</p>
+                    </div>
+                </div>
+
+                <div class="md:col-span-1 md:row-span-1 group holo-card p-8 flex flex-col justify-center hover-target cursor-pointer hover:-translate-y-2 modal-card" 
+                     data-tilt data-tilt-max="10" data-tilt-glare="true" data-tilt-max-glare="0.2"
+                     data-tag="ACHIEVEMENT" data-title="Top 1% APCS 程式檢定" data-icon="trophy"
+                     data-desc="<p class='text-[#00ffff] mb-4 font-bold'>> ACHIEVEMENT_UNLOCKED...</p>
+                     <p>在進階程式設計檢定 (APCS) 中取得全國前 1%。<br><br>
+                     <span class='text-white mt-4 inline-block font-bold'>演算法精通：</span><br>
+                     - 動態規劃 (Dynamic Programming)<br>
+                     - 圖論演算法 (Graph Theory, Dijkstra)<br>
+                     - 資料結構底層實作 (Tree, Heap, Disjoint Sets)</p>">
+                    <div class="holo-content pointer-events-none">
+                        <i data-lucide="trophy" class="text-[#00ffff] mb-4 w-10 h-10 group-hover:rotate-12 transition-transform"></i>
+                        <div class="text-4xl font-bold mb-2 text-white">Top <span class="text-[#00ffff]">1%</span></div>
+                        <p class="text-gray-400 text-sm font-mono">APCS 程式檢定 最高級距</p>
+                    </div>
+                </div>
+
+                <div class="md:col-span-1 md:row-span-1 group holo-card p-8 flex flex-col justify-center hover-target cursor-pointer hover:-translate-y-2 modal-card" 
+                     data-tilt data-tilt-max="10" data-tilt-glare="true" data-tilt-max-glare="0.2"
+                     data-tag="LEADERSHIP" data-title="資訊研究社 社長" data-icon="users"
+                     data-desc="<p class='text-[#A855F7] mb-4 font-bold'>> LEADERSHIP_LOGS...</p>
+                     <p>不只自己寫 Code，更致力於推廣程式教育與開源精神。<br><br>
+                     <span class='text-white mt-4 inline-block font-bold'>貢獻：</span><br>
+                     - 規劃並教授 Python 基礎與網頁開發課程<br>
+                     - 主辦跨校百人學生黑客松，擔任總召集人<br>
+                     - 帶領學弟妹完成 5 個以上的開源專案</p>">
+                    <div class="holo-content pointer-events-none">
+                        <i data-lucide="users" class="text-[#A855F7] mb-4 w-10 h-10 group-hover:scale-110 transition-transform"></i>
+                        <div class="text-2xl font-bold mb-2 text-white">資訊研究社 <span class="text-xs font-mono bg-[#A855F7] text-white ml-2 px-2 py-1 rounded">President</span></div>
+                        <p class="text-gray-400 text-sm">帶領 50+ 學弟妹探索開發。</p>
+                    </div>
+                </div>
+
+                <div class="md:col-span-3 md:row-span-1 group holo-card p-8 flex items-center justify-between hover-target cursor-pointer hover:-translate-y-2 modal-card" 
+                     data-tilt data-tilt-max="2" data-tilt-glare="true" data-tilt-max-glare="0.1"
+                     data-tag="CONTRIBUTOR" data-title="Open Source Contributions" data-icon="github"
+                     data-desc="<p class='text-white mb-4 font-bold'>> GITHUB_METRICS...</p>
+                     <p>活躍的開源貢獻者。相信「Code 寫出來就是要給別人用的」。<br><br>
+                     <span class='text-white mt-4 inline-block font-bold'>紀錄：</span><br>
+                     - 2024 年累積超過 200+ commits<br>
+                     - 維護 5 個活躍的 GitHub repositories<br>
+                     - 提交多個前端套件 Bug fixes 與效能優化</p>">
+                    <div class="holo-content flex items-center gap-6 pointer-events-none">
+                        <div class="p-4 bg-white/5 rounded-2xl"><i data-lucide="github" class="w-10 h-10 text-white"></i></div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-white mb-1">Open Source Contributions</h3>
+                            <p class="text-gray-400 font-mono text-sm">200+ Commits in 2024 / 5 Active Repositories</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. 學習進程 Timeline -->
+    <section id="timeline" class="py-32 px-6 max-w-5xl mx-auto scroll-mt-20 border-t border-white/5 relative">
+        <div class="reveal text-center mb-20">
+            <h2 class="text-4xl font-bold font-syne flex items-center justify-center gap-3 mb-4">
+                <i data-lucide="route" class="text-[#00ffff]"></i> Evolution Line.
+            </h2>
+            <p class="text-gray-400">從寫下第一行 Hello World 到現在的軌跡。<br>
+            <span class="text-[#A855F7] text-sm font-mono mt-2 inline-block animate-pulse">> 點擊節點卡片解密詳細數據</span></p>
+        </div>
+
+        <div class="relative w-full py-10">
+            <div class="absolute left-[24px] md:left-1/2 top-0 bottom-0 w-[2px] transform md:-translate-x-1/2 bg-white/5 z-0">
+                <div id="timeline-scroll-line" class="w-full bg-gradient-to-b from-[#A855F7] via-[#00ffff] to-[#A855F7] h-0 transition-all duration-500 ease-out shadow-[0_0_15px_#A855F7]"></div>
+            </div>
+
+            <!-- Timeline Card 1 -->
+            <div class="reveal flex flex-col md:flex-row justify-between items-center w-full mb-16 relative pl-16 md:pl-0">
+                <div class="w-full md:w-[45%] md:pr-10 text-left md:text-right">
+                    <div class="holo-card p-6 text-left hover-target inline-block w-full cursor-pointer group hover:-translate-y-2 modal-card" 
+                         data-tilt data-tilt-max="5" data-tilt-glare="true" data-tilt-max-glare="0.2"
+                         data-tag="2023.09" data-title="Hello, World!" data-icon="terminal"
+                         data-desc="<p class='text-[#A855F7] mb-4 font-bold'>> INITIALIZING SEQUENCE...</p><p>那是一個平凡的下午，我第一次在終端機輸入了 <code>print('Hello, World!')</code>。<br><br>這不僅僅是一行代碼，而是我與數位世界建立連結的起點。<br><br><span class='text-white mt-4 inline-block font-bold'>解鎖技能：</span><br>- Python 基礎語法與物件導向<br>- 基礎演算法與資料結構邏輯<br>- 第一次熬夜除錯的成就感</p>">
+                        <div class="holo-content pointer-events-none">
+                            <div class="text-[#A855F7] font-mono text-sm mb-2 tracking-widest">2023.09</div>
+                            <h4 class="text-xl font-bold text-white mb-2">Hello, World!</h4>
+                            <p class="text-gray-400 text-sm">第一次在終端機印出文字，從此打開了新世界的大門。</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="timeline-orb absolute left-[24px] md:left-1/2 transform -translate-x-1/2 w-6 h-6 rounded-full bg-[#0A0A0A] border-2 border-gray-700 z-10 flex items-center justify-center transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]" data-active-border="border-[#A855F7]" data-active-shadow="shadow-[0_0_15px_#A855F7]" data-active-dot="bg-[#A855F7]"><div class="w-2 h-2 rounded-full bg-gray-700 transition-all duration-500"></div></div>
+                <div class="w-full md:w-[45%] hidden md:block"></div>
+            </div>
+
+            <!-- Timeline Card 2 -->
+            <div class="reveal flex flex-col md:flex-row justify-between items-center w-full mb-16 relative pl-16 md:pl-0">
+                <div class="w-full md:w-[45%] hidden md:block"></div>
+                <div class="timeline-orb absolute left-[24px] md:left-1/2 transform -translate-x-1/2 w-6 h-6 rounded-full bg-[#0A0A0A] border-2 border-gray-700 z-10 flex items-center justify-center transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]" data-active-border="border-[#00ffff]" data-active-shadow="shadow-[0_0_15px_#00ffff]" data-active-dot="bg-[#00ffff]"><div class="w-2 h-2 rounded-full bg-gray-700 transition-all duration-500"></div></div>
+                <div class="w-full md:w-[45%] md:pl-10 text-left">
+                    <div class="holo-card p-6 text-left hover-target inline-block w-full cursor-pointer group hover:-translate-y-2 modal-card" 
+                         data-tilt data-tilt-max="5" data-tilt-glare="true" data-tilt-max-glare="0.2"
+                         data-tag="2024.05" data-title="Hackathon Champion" data-icon="award"
+                         data-desc="<p class='text-[#00ffff] mb-4 font-bold'>> EXECUTING HACKATHON.SH...</p><p>與團隊在 48 小時的高壓下，完成了從發想到原型的極限開發。<br><br><span class='text-white mt-4 inline-block font-bold'>專案里程碑：</span><br>- 擔任團隊 Technical Lead，主導系統架構<br>- 構建即時數據處理的後端 API<br>- 喝了 12 罐能量飲料（不建議模仿）</p>">
+                        <div class="holo-content pointer-events-none">
+                            <div class="text-[#00ffff] font-mono text-sm mb-2 tracking-widest">2024.05</div>
+                            <h4 class="text-xl font-bold text-white mb-2">Hackathon Champion</h4>
+                            <p class="text-gray-400 text-sm">首次以隊長身分參加全國黑客松，48小時未闔眼完成專案。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timeline Card 3 -->
+            <div class="reveal flex flex-col md:flex-row justify-between items-center w-full relative pl-16 md:pl-0">
+                <div class="w-full md:w-[45%] md:pr-10 text-left md:text-right">
+                    <div class="holo-card p-6 text-left hover-target inline-block w-full cursor-pointer group hover:-translate-y-2 modal-card" 
+                         data-tilt data-tilt-max="5" data-tilt-glare="true" data-tilt-max-glare="0.2"
+                         data-tag="2025 - Future" data-title="Deep Learning & Web3" data-icon="rocket"
+                         data-desc="<p class='text-[#A855F7] mb-4 font-bold'>> LOADING FUTURE_MODULES...</p><p>探索技術的下一個邊界。<br><br><span class='text-white mt-4 inline-block font-bold'>未來目標：</span><br>- 研讀最新 AI 論文並嘗試復現開源模型<br>- 探索智慧合約的安全性與去中心化應用<br>- 創造真正能改變生活的軟體產品</p>">
+                        <div class="holo-content pointer-events-none">
+                            <div class="text-[#A855F7] font-mono text-sm mb-2 tracking-widest">2025 - Future</div>
+                            <h4 class="text-xl font-bold text-white mb-2">Deep Learning & Web3</h4>
+                            <p class="text-gray-400 text-sm">目標將 AI 模型無縫整合至前端應用，創造真正能改變生活的產品。</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="timeline-orb absolute left-[24px] md:left-1/2 transform -translate-x-1/2 w-6 h-6 rounded-full bg-[#0A0A0A] border-2 border-gray-700 z-10 flex items-center justify-center transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]" data-active-border="border-[#A855F7]" data-active-shadow="shadow-[0_0_15px_#A855F7]" data-active-dot="bg-[#A855F7]"><div class="w-2 h-2 rounded-full bg-gray-700 transition-all duration-500"></div></div>
+                <div class="w-full md:w-[45%] hidden md:block"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. 裝備庫 -->
+    <section id="setup" class="py-24 px-6 max-w-6xl mx-auto border-t border-white/5">
+        <div class="reveal text-center mb-12">
+            <h2 class="text-2xl font-bold font-syne text-gray-500 mb-2">The Setup</h2>
+            <p class="text-gray-600 font-mono text-sm">Tools that translate coffee into code.</p>
+        </div>
+        
+        <div class="reveal flex flex-wrap justify-center gap-6">
+            <div class="holo-card p-4 flex items-center gap-4 hover-target cursor-pointer group modal-card hover:-translate-y-2" 
+                 data-tilt data-tilt-max="20" data-tilt-glare="true"
+                 data-tag="HARDWARE" data-title="MacBook Pro M3" data-icon="monitor"
+                 data-img="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80&w=800"
+                 data-desc="> OS: macOS Sonoma<br>> CHIP: Apple M3 Pro<br><br>我的主力開發機。不管開幾十個分頁和 Docker，它依然冷靜得像個無情的打字機器。">
+                <div class="holo-content flex items-center gap-4 pointer-events-none">
+                    <i data-lucide="monitor" class="text-gray-400 group-hover:text-white transition-colors"></i>
+                    <span class="text-sm font-bold text-white">MacBook Pro M3</span>
+                </div>
+            </div>
+
+            <div class="holo-card p-4 flex items-center gap-4 hover-target cursor-pointer group modal-card hover:-translate-y-2" 
+                 data-tilt data-tilt-max="20" data-tilt-glare="true"
+                 data-tag="PERIPHERAL" data-title="Keychron Q1" data-icon="keyboard"
+                 data-img="https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&q=80&w=800"
+                 data-desc="> TYPE: 75% Mechanical<br>> SWITCH: Gateron Phantom Red<br><br>『Thock Thock Thock』—— 這是生產力的聲音。客製化鋁合金鍵盤，帶來極致打字爽感。">
+                <div class="holo-content flex items-center gap-4 pointer-events-none">
+                    <i data-lucide="keyboard" class="text-gray-400 group-hover:text-white transition-colors"></i>
+                    <span class="text-sm font-bold text-white">Keychron Q1</span>
+                </div>
+            </div>
+
+            <div class="holo-card p-4 flex items-center gap-4 hover-target cursor-pointer group modal-card hover:-translate-y-2" 
+                 data-tilt data-tilt-max="20" data-tilt-glare="true"
+                 data-tag="SOFTWARE" data-title="VS Code" data-icon="code-2"
+                 data-img="https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=800"
+                 data-desc="> THEME: One Dark Pro<br>> FONT: Fira Code<br><br>身為開發者絕對離不開的神兵利器。堅持只用 Dark Mode，因為強光容易吸引 Bug。">
+                <div class="holo-content flex items-center gap-4 pointer-events-none">
+                    <i data-lucide="code-2" class="text-gray-400 group-hover:text-white transition-colors"></i>
+                    <span class="text-sm font-bold text-white">VS Code (One Dark)</span>
+                </div>
+            </div>
+
+            <div class="holo-card p-4 flex items-center gap-4 hover-target cursor-pointer group modal-card hover:-translate-y-2" 
+                 data-tilt data-tilt-max="20" data-tilt-glare="true"
+                 data-tag="ENERGY" data-title="Iced Americano" data-icon="coffee"
+                 data-img="https://images.unsplash.com/photo-1498804103079-a6351b050096?auto=format&fit=crop&q=80&w=800"
+                 data-desc="> TYPE: Dark Roast<br>> BUFF: +50% Focus, -10% Sleep<br><br>液體代碼轉譯器。沒有加糖奶的純黑咖啡，是熬夜跑模型、解無限迴圈的精神泉源。">
+                <div class="holo-content flex items-center gap-4 pointer-events-none">
+                    <i data-lucide="coffee" class="text-gray-400 group-hover:text-white transition-colors"></i>
+                    <span class="text-sm font-bold text-white">Americano x3</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 7. Terminal 打 Bug 小遊戲 -->
+    <section id="game" class="py-32 px-6 max-w-4xl mx-auto scroll-mt-20 border-t border-white/5">
+        <div class="reveal">
+            <h2 class="text-3xl font-bold mb-4 font-syne flex items-center gap-3">
+                <i data-lucide="terminal-square" class="text-red-400"></i> Interactive Debugger.
+            </h2>
+            <p class="text-gray-400 mb-8">專案即將上線，但系統裡爬滿了 Bug！請幫我在 15 秒內消滅它們。</p>
+
+            <div class="bg-[#111] border border-gray-700 rounded-xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative">
+                <div class="bg-[#222] px-4 py-3 flex items-center gap-2 border-b border-gray-700">
+                    <div class="w-3 h-3 rounded-full bg-red-500 hover:opacity-80"></div>
+                    <div class="w-3 h-3 rounded-full bg-yellow-500 hover:opacity-80"></div>
+                    <div class="w-3 h-3 rounded-full bg-green-500 hover:opacity-80"></div>
+                    <div class="mx-auto text-xs text-gray-400 font-mono">jack@server: ~/production</div>
+                </div>
+                
+                <div id="game-board" class="p-6 h-[400px] relative font-mono text-sm text-green-400 overflow-hidden">
+                    <div id="game-start-screen" class="absolute inset-0 flex flex-col items-center justify-center bg-[#111]/90 z-10 backdrop-blur-sm">
+                        <p class="text-red-400 mb-6 text-lg animate-pulse">> WARNING: Multiple bugs detected</p>
+                        <button id="start-game-btn" class="hover-target px-8 py-3 border-2 border-green-500 text-green-500 hover:bg-green-500 hover:text-black font-bold transition-all uppercase tracking-widest rounded shadow-[0_0_15px_rgba(34,197,94,0.3)]">[ Execute Fix.sh ]</button>
+                    </div>
+                    
+                    <div class="flex justify-between items-center mb-4 text-gray-500 border-b border-gray-800 pb-2">
+                        <div>Score: <span id="score-display" class="text-white text-xl">0</span></div>
+                        <div>Time: <span id="time-display" class="text-white text-xl">15</span>s</div>
+                    </div>
+                    
+                    <div id="bug-container" class="absolute top-16 left-0 w-full h-[300px]"></div>
+
+                    <div id="game-over-screen" class="absolute inset-0 flex-col items-center justify-center bg-[#111]/95 z-20 hidden">
+                        <h3 class="text-4xl text-white font-bold mb-4 font-syne">System Halted.</h3>
+                        <p id="final-message" class="text-gray-400 mb-8 text-center px-4 text-lg"></p>
+                        <button id="restart-game-btn" class="hover-target px-8 py-3 bg-white text-black font-bold hover:bg-[#A855F7] hover:text-white transition-all rounded shadow-[0_0_20px_rgba(255,255,255,0.2)]">
+                            Restart Server
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ★ 全域通用解密彈窗 (Universal Modal) ★ -->
+    <div id="universal-modal" class="fixed inset-0 z-[200] flex items-center justify-center opacity-0 pointer-events-none transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] backdrop-blur-md bg-[#0A0A0A]/90 p-4 md:p-6">
+        <div class="relative w-full max-w-2xl bg-[#0f0f11] border border-white/20 rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(168,85,247,0.3)] transform scale-95 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] flex flex-col max-h-[90vh]" id="universal-modal-content">
+            
+            <button class="modal-close-btn absolute top-4 right-4 z-20 p-2 bg-black/50 rounded-full text-gray-300 hover:text-white hover:bg-[#A855F7] backdrop-blur-md transition-all hover-target shadow-lg border border-white/10">
+                <i data-lucide="x" class="w-5 h-5 pointer-events-none"></i>
+            </button>
+            
+            <div id="umodal-header" class="h-48 md:h-60 w-full relative bg-black flex items-center justify-center group hidden shrink-0">
+                <img id="umodal-img" src="" alt="Detail Image" class="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-80 transition-opacity duration-700 hidden">
+                <div class="absolute inset-0 bg-gradient-to-t from-[#0f0f11] via-transparent to-transparent"></div>
+                <div id="umodal-icon-container" class="relative z-10 transform group-hover:scale-110 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] drop-shadow-[0_0_15px_rgba(255,255,255,0.5)] hidden"></div>
+            </div>
+            
+            <div class="p-6 md:p-8 bg-gradient-to-b from-[#0f0f11] to-[#0A0A0A] overflow-y-auto no-scrollbar">
+                <div id="umodal-tag" class="text-[#A855F7] font-mono text-sm mb-2 tracking-widest hidden"></div>
+                <h3 id="umodal-title" class="text-3xl font-bold text-white mb-4 font-syne tracking-wide"></h3>
+                <div class="w-full h-[1px] bg-gradient-to-r from-[#A855F7] via-[#00ffff] to-transparent mb-6 opacity-40"></div>
+                <div id="umodal-desc" class="text-gray-300 font-mono text-sm leading-relaxed space-y-2"></div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="border-t border-white/5 py-12 text-center text-gray-500 text-sm bg-black/50 backdrop-blur-sm mt-20">
+        <p class="font-mono mb-2 text-[#A855F7]">System.exit(0);</p>
+        <p>© <span id="year"></span> JACK CHANG. Code, Coffee & Chaos.</p>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // 1. 頂部滾動進度條 & 出現動畫
+        window.addEventListener('scroll', () => {
+            const winScroll = document.documentElement.scrollTop || document.body.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            document.getElementById("scroll-progress").style.width = (winScroll / height) * 100 + "%";
+        });
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('active'); });
+        }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+        setTimeout(() => document.querySelector('.reveal').classList.add('active'), 100);
+
+        // 2. 打字機特效
+        new Typed('#typed-output', {
+            strings:['A Digital Native.', 'An Algorithm Lover.', 'A 3D Web Explorer.', 'Jack Chang.'],
+            typeSpeed: 50, backSpeed: 30, backDelay: 1500, loop: true, cursorChar: '_',
+        });
+
+        // 3. 自定義鼠標 & 磁吸
+        const cursorDot = document.getElementById('cursor-dot'), cursorOutline = document.getElementById('cursor-outline');
+        let mouseX = 0, mouseY = 0, outlineX = 0, outlineY = 0;
+        window.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX; mouseY = e.clientY;
+            cursorDot.style.left = `${mouseX}px`; cursorDot.style.top = `${mouseY}px`;
+        });
+        function animateCursor() {
+            outlineX += (mouseX - outlineX) * 0.2; outlineY += (mouseY - outlineY) * 0.2;
+            cursorOutline.style.left = `${outlineX}px`; cursorOutline.style.top = `${outlineY}px`;
+            requestAnimationFrame(animateCursor);
+        }
+        animateCursor();
+        document.querySelectorAll('.hover-target, a, button, .holo-card').forEach(target => {
+            target.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
+            target.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
+        });
+        document.querySelectorAll('.magnetic-wrap').forEach(wrap => {
+            const btn = wrap.querySelector('.magnetic-btn');
+            wrap.addEventListener('mousemove', (e) => {
+                const rect = wrap.getBoundingClientRect();
+                btn.style.transform = `translate(${(e.clientX - rect.left - rect.width / 2) * 0.3}px, ${(e.clientY - rect.top - rect.height / 2) * 0.3}px)`;
+            });
+            wrap.addEventListener('mouseleave', () => btn.style.transform = 'translate(0px, 0px)');
+        });
+
+        // 4. 動態背景神經網路
+        const canvas = document.getElementById('network-canvas'), ctx = canvas.getContext('2d');
+        let width, height, particles =[];
+        function resizeCanvas() { width = window.innerWidth; height = window.innerHeight; canvas.width = width; canvas.height = height; }
+        window.addEventListener('resize', resizeCanvas); resizeCanvas();
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width; this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.5; this.vy = (Math.random() - 0.5) * 0.5;
+                this.radius = Math.random() * 1.5 + 0.5;
+            }
+            update() {
+                this.x += this.vx; this.y += this.vy;
+                if (this.x < 0 || this.x > width) this.vx *= -1;
+                if (this.y < 0 || this.y > height) this.vy *= -1;
+            }
+            draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fillStyle = 'rgba(168, 85, 247, 0.4)'; ctx.fill(); }
+        }
+        for (let i = 0; i < 60; i++) particles.push(new Particle());
+        function animateCanvas() {
+            ctx.clearRect(0, 0, width, height);
+            particles.forEach((p, index) => {
+                p.update(); p.draw();
+                for (let j = index + 1; j < particles.length; j++) {
+                    let p2 = particles[j], dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+                    if (dist < 130) { ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.strokeStyle = `rgba(168, 85, 247, ${0.1 - dist/1000})`; ctx.stroke(); }
+                }
+                let mouseDist = Math.hypot(p.x - mouseX, p.y - mouseY);
+                if (mouseDist < 180) { ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(mouseX, mouseY); ctx.strokeStyle = `rgba(0, 255, 255, ${0.2 - mouseDist/800})`; ctx.stroke(); p.x -= (p.x - mouseX) * 0.005; p.y -= (p.y - mouseY) * 0.005; }
+            });
+            requestAnimationFrame(animateCanvas);
+        }
+        animateCanvas();
+
+        // 5. 全域 Modal
+        const toggleBodyScroll = (lock) => document.body.style.overflow = lock ? 'hidden' : 'auto';
+        function openUniversalModal() {
+            document.getElementById('universal-modal').classList.remove('opacity-0', 'pointer-events-none');
+            document.getElementById('universal-modal-content').classList.replace('scale-95', 'scale-100');
+            toggleBodyScroll(true);
+        }
+        function closeUniversalModal() {
+            document.getElementById('universal-modal').classList.add('opacity-0', 'pointer-events-none');
+            document.getElementById('universal-modal-content').classList.replace('scale-100', 'scale-95');
+            toggleBodyScroll(false);
+        }
+        document.querySelectorAll('.modal-close-btn').forEach(btn => btn.addEventListener('click', closeUniversalModal));
+        document.getElementById('universal-modal').addEventListener('click', (e) => { if (e.target.id === 'universal-modal') closeUniversalModal(); });
+        document.querySelectorAll('.modal-card').forEach(card => {
+            card.addEventListener('click', () => {
+                document.getElementById('umodal-title').innerText = card.dataset.title || '';
+                document.getElementById('umodal-desc').innerHTML = card.dataset.desc || '';
+                const tagEl = document.getElementById('umodal-tag');
+                if(card.dataset.tag) { tagEl.innerText = card.dataset.tag; tagEl.classList.remove('hidden'); } else { tagEl.classList.add('hidden'); }
+                const headerEl = document.getElementById('umodal-header'), imgEl = document.getElementById('umodal-img'), iconContainer = document.getElementById('umodal-icon-container');
+                if(card.dataset.img || card.dataset.icon) {
+                    headerEl.classList.remove('hidden');
+                    if(card.dataset.img) { imgEl.src = card.dataset.img; imgEl.classList.remove('hidden'); } else { imgEl.classList.add('hidden'); }
+                    if(card.dataset.icon) { iconContainer.innerHTML = `<i data-lucide="${card.dataset.icon}" class="w-16 h-16 text-white opacity-80"></i>`; iconContainer.classList.remove('hidden'); lucide.createIcons(); } else { iconContainer.classList.add('hidden'); }
+                } else { headerEl.classList.add('hidden'); }
+                openUniversalModal();
+            });
+        });
+
+        // 6. Timeline 線條
+        window.addEventListener('scroll', () => {
+            const timelineSection = document.getElementById('timeline'), scrollLine = document.getElementById('timeline-scroll-line');
+            if (!timelineSection || !scrollLine) return;
+            const rect = timelineSection.getBoundingClientRect(), winHeight = window.innerHeight;
+            const startPoint = winHeight * 0.7, endPoint = winHeight * 0.2 - rect.height;
+            let progress = Math.max(0, Math.min(1, (startPoint - rect.top) / (startPoint - endPoint)));
+            scrollLine.style.height = `${progress * 100}%`;
+            document.querySelectorAll('.timeline-orb').forEach(orb => {
+                const dot = orb.children[0];
+                if (orb.getBoundingClientRect().top < winHeight * 0.65) {
+                    orb.classList.replace('border-gray-700', orb.dataset.activeBorder); orb.classList.add(orb.dataset.activeShadow); dot.classList.replace('bg-gray-700', orb.dataset.activeDot); dot.classList.add('animate-pulse');
+                } else {
+                    orb.classList.replace(orb.dataset.activeBorder, 'border-gray-700'); orb.classList.remove(orb.dataset.activeShadow); dot.classList.replace(orb.dataset.activeDot, 'bg-gray-700'); dot.classList.remove('animate-pulse');
+                }
+            });
+        });
+
+        // 7. 打 Bug 遊戲
+        const gameBoard = document.getElementById('game-board'), bugContainer = document.getElementById('bug-container'), scoreDisplay = document.getElementById('score-display'), timeDisplay = document.getElementById('time-display');
+        let gameScore = 0, gameTime = 15, gameInterval, bugSpawner;
+        gameBoard.addEventListener('mouseenter', () => document.body.classList.add('cursor-game')); gameBoard.addEventListener('mouseleave', () => document.body.classList.remove('cursor-game'));
+        function startGame() {
+            gameScore = 0; gameTime = 15; scoreDisplay.innerText = gameScore; timeDisplay.innerText = gameTime;
+            bugContainer.innerHTML = ''; document.getElementById('game-start-screen').classList.add('hidden'); 
+            document.getElementById('game-over-screen').classList.add('hidden'); document.getElementById('game-over-screen').classList.remove('flex');
+            gameInterval = setInterval(() => { gameTime--; timeDisplay.innerText = gameTime; if (gameTime <= 0) endGame(); }, 1000);
+            bugSpawner = setInterval(spawnBug, 500); spawnBug();
+        }
+        function spawnBug() {
+            const bug = document.createElement('div'); bug.className = 'bug-entity hover-target'; bug.innerText = '🐛';
+            bug.style.left = `${Math.random() * (bugContainer.clientWidth - 40)}px`; bug.style.top = `${Math.random() * (bugContainer.clientHeight - 40)}px`;
+            bug.style.animation = `float ${Math.random() * 2 + 0.5}s infinite alternate`;
+            bug.addEventListener('mousedown', (e) => {
+                e.stopPropagation(); if (bug.innerText === '💥') return;
+                bug.innerText = '💥'; gameScore++; scoreDisplay.innerText = gameScore;
+                scoreDisplay.classList.add('text-green-400', 'scale-125'); setTimeout(() => scoreDisplay.classList.remove('text-green-400', 'scale-125'), 150);
+                setTimeout(() => bug.remove(), 300);
+            });
+            bugContainer.appendChild(bug); setTimeout(() => { if (bug && bug.innerText === '🐛') bug.remove(); }, Math.random() * 1500 + 1000);
+        }
+        function endGame() {
+            clearInterval(gameInterval); clearInterval(bugSpawner);
+            document.getElementById('game-over-screen').classList.remove('hidden'); document.getElementById('game-over-screen').classList.add('flex');
+            let msg = gameScore === 0 ? "連一個 Bug 都沒解掉...你的系統已崩潰 💥" : gameScore < 12 ? `你修復了 <span class="text-green-400 text-2xl">${gameScore}</span> 個 Bug。但很遺憾，系統又自動生成了 ${gameScore * 3} 個新 Bug。` : `太神啦！你以鬼神般的手速修復了 <span class="text-[#00ffff] text-3xl font-bold">${gameScore}</span> 個 Bug！Senior 工程師非你莫屬。`;
+            document.getElementById('final-message').innerHTML = msg;
+        }
+        document.getElementById('start-game-btn').addEventListener('click', startGame); document.getElementById('restart-game-btn').addEventListener('click', startGame);
+
+        // ★ 8. Spotify 靈動島互動與音樂播放邏輯 ★
+        const island = document.getElementById('dynamic-island');
+        const collapsed = document.getElementById('island-collapsed');
+        const expanded = document.getElementById('island-expanded');
+        const audio = document.getElementById('bg-audio');
+        const playBtn = document.getElementById('play-pause-btn');
+        let isExpanded = false, isPlaying = false;
+
+        // 點擊展開/收合
+        island.addEventListener('click', (e) => {
+            if (e.target.closest('#play-pause-btn') || e.target.closest('a')) return; 
+            if (!isExpanded) {
+                isExpanded = true;
+                island.classList.add('is-expanded');
+                collapsed.classList.add('opacity-0');
+                setTimeout(() => { expanded.classList.remove('opacity-0', 'pointer-events-none'); expanded.classList.add('pointer-events-auto'); }, 200);
+            } else {
+                isExpanded = false;
+                expanded.classList.remove('pointer-events-auto'); expanded.classList.add('opacity-0', 'pointer-events-none');
+                island.classList.remove('is-expanded');
+                setTimeout(() => collapsed.classList.remove('opacity-0'), 200);
+            }
+        });
+
+        // 點擊外部收合
+        document.addEventListener('click', (e) => {
+            if (isExpanded && !island.contains(e.target)) {
+                isExpanded = false;
+                expanded.classList.remove('pointer-events-auto'); expanded.classList.add('opacity-0', 'pointer-events-none');
+                island.classList.remove('is-expanded');
+                setTimeout(() => collapsed.classList.remove('opacity-0'), 200);
+            }
+        });
+        
+        // 播放音樂邏輯
+        audio.addEventListener('waiting', () => {
+            document.getElementById('play-icon').classList.add('hidden'); document.getElementById('pause-icon').classList.add('hidden'); document.getElementById('loading-icon').classList.remove('hidden');
+        });
+        audio.addEventListener('playing', () => {
+            document.getElementById('loading-icon').classList.add('hidden'); document.getElementById('play-icon').classList.add('hidden'); document.getElementById('pause-icon').classList.remove('hidden');
+            document.querySelectorAll('.cover-art-spin').forEach(el => el.style.animationPlayState = 'running');
+            document.querySelectorAll('.wave-bar').forEach(b => b.style.animationPlayState = 'running');
+        });
+        
+        playBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (isPlaying) {
+                audio.pause();
+                document.getElementById('play-icon').classList.remove('hidden'); document.getElementById('pause-icon').classList.add('hidden'); document.getElementById('loading-icon').classList.add('hidden');
+                document.querySelectorAll('.cover-art-spin').forEach(el => el.style.animationPlayState = 'paused');
+                document.querySelectorAll('.wave-bar').forEach(b => b.style.animationPlayState = 'paused');
+            } else { 
+                audio.play(); 
+                document.getElementById('play-icon').classList.add('hidden'); document.getElementById('loading-icon').classList.remove('hidden'); 
+            }
+            isPlaying = !isPlaying;
+        });
+
+        document.getElementById('spotify-link-btn').addEventListener('click', (e) => e.stopPropagation());
+    </script>
+</body>
+</html>
